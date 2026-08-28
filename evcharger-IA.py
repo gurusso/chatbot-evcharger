@@ -2,6 +2,12 @@ import os
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
+
+# importações novas para o FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
 load_dotenv()
 
 #configuração client IA
@@ -22,29 +28,63 @@ configuracao_ia = types.GenerateContentConfig(
     temperature=0.3,
 )
 
-print("--- Chatbot GoodWe & Carregadores Iniciado ---")
-print("Digite 'sair' para encerrar.\n")
 
-#loop de perguntas e respostas
-while True:
-    pergunta_usuario = input("Você: ")
+#servidor FastAPI
 
-    if pergunta_usuario.lower() in ["sair", "exit", "quit"]:
-        print("Encerrando chat...")
-        break
+app = FastAPI()
 
-    if not pergunta_usuario.strip():
-        continue
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+class PerguntaRequest(BaseModel):
+    pergunta: str
+
+@app.post("/api/chat")
+async def responder_chat(dados: PerguntaRequest):
+    if not dados.pergunta.strip():
+         raise HTTPException(status_code=400, detail="A pergunta não pode estar vazia.")
     try:
-        #chamada com instruções de restrição
         response = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=pergunta_usuario,
+            contents=dados.pergunta,
             config=configuracao_ia,
         )
-
-        print(f"\nIA GoodWe: {response.text}\n")
-
+        return {"resposta": response.text}
     except Exception as e:
-        print(f"\nErro ao comunicar com a IA: {e}\n")
+        raise HTTPException(status_code=500, detail="Erro interno no servidor da IA.")
+
+
+#chat no terminal
+
+if __name__ == '__main__':
+    print("--- Chatbot GoodWe & Carregadores Iniciado ---")
+    print("Digite 'sair' para encerrar.\n")
+
+#loop de perguntas e respostas
+    while True:
+        pergunta_usuario = input("Você: ")
+
+        if pergunta_usuario.lower() in ["sair", "exit", "quit"]:
+            print("Encerrando chat...")
+            break
+
+        if not pergunta_usuario.strip():
+            continue
+
+        try:
+#chamada com instruções de restrição
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=pergunta_usuario,
+                config=configuracao_ia,
+            )
+
+            print(f"\nIA GoodWe: {response.text}\n")
+
+        except Exception as e:
+            print(f"\nErro ao comunicar com a IA: {e}\n")
