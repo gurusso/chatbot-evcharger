@@ -1,8 +1,11 @@
 import os
 from google import genai
 from google.genai import types
+from dotenv import load_dotenv
+load_dotenv()
+
 #configuração client IA
-client = genai.Client(api_key="GEMINI_API_KEY")
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 #configuração do comportamento da IA
 configuracao_ia = types.GenerateContentConfig(
@@ -21,3 +24,27 @@ configuracao_ia = types.GenerateContentConfig(
 
 print("--- Chatbot GoodWe & Carregadores Iniciado ---")
 print("Digite 'sair' para encerrar.\n")
+
+#loop de perguntas e respostas
+while True:
+    pergunta_usuario = input("Você: ")
+
+    if pergunta_usuario.lower() in ["sair", "exit", "quit"]:
+        print("Encerrando chat...")
+        break
+
+    if not pergunta_usuario.strip():
+        continue
+
+    try:
+        #chamada com instruções de restrição
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=pergunta_usuario,
+            config=configuracao_ia,
+        )
+
+        print(f"\nIA GoodWe: {response.text}\n")
+
+    except Exception as e:
+        print(f"\nErro ao comunicar com a IA: {e}\n")
