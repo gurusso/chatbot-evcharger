@@ -1,6 +1,8 @@
 # EV Charger & GoodWe Assistant ⚡🚗
-
 Plataforma web para gerenciamento e agendamento de recarga de veículos elétricos, equipada com um assistente virtual inteligente especializado em eletromobilidade e produtos GoodWe.
+
+## Vídeo demonstrativo
+https://youtu.be/-QMgXR9scM0
 
 ## 🚀 Funcionalidades
 * **Mapa e Localização:** Interface para encontrar pontos de recarga disponíveis.
